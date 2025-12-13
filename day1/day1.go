@@ -14,7 +14,8 @@ func main() {
 
 	scanner := bufio.NewScanner(data)
 	position := 50
-	password := 0
+	password_on_zero := 0
+	password_passing_zero := 0
 	for scanner.Scan() {
 
 		/**
@@ -34,7 +35,6 @@ func main() {
 
 		if distance > 99 {
 			full_rotations += distance / 100
-			// fmt.Printf("Distance? %d\n", distance/100)
 			distance = distance % 100
 		}
 
@@ -57,7 +57,12 @@ func main() {
 			}
 		}
 
-		password += full_rotations
-		fmt.Printf("P: %d %c %d = %d, Password: %d\n", og_position, operator, og_distance, position, password)
+		if og_position != 0 && position == 0 {
+			password_on_zero++
+		}
+
+		password_passing_zero += full_rotations
+		fmt.Printf("P: %d %c %d = %d, Password: %d Password on 0: %d\n", og_position, operator, og_distance, position, password_passing_zero, password_on_zero)
+
 	}
 }
