@@ -7,14 +7,12 @@ import (
 	"strconv"
 )
 
-func findIndexOfHighest(battery_bank []rune, start_index int, consider_last bool) int {
+// TODO: NOTE
+// the key here is to go from index 0 to 3, determined by length of the battery - digits needed, rolling window function
+func findIndexOfHighest(battery_bank []rune, start_index int, end_index int) int {
 	highest := 0
-	indexOfHighest := start_index
-	var tail_offset int = 0
-	if consider_last == false {
-		tail_offset = 1
-	}
-	for i := start_index; i < len(battery_bank)-tail_offset; i++ {
+	indexOfHighest := 0
+	for i := start_index; i <= end_index; i++ {
 		battery_v := int(battery_bank[i])
 		if battery_v > highest {
 			highest = battery_v
@@ -35,31 +33,33 @@ func main() {
 	var batteries [][]rune
 	for scanner.Scan() {
 		battery_str := scanner.Text()
-		fmt.Println(battery_str)
-
 		batteries = append(batteries, []rune(battery_str))
 	}
 
-	fmt.Println(batteries)
-
-	var charges []int
 	var voltage int
+	var voltages []int
 	for _, bank := range batteries {
-		var highest int
-		var indexOfHighest = findIndexOfHighest(bank, 0, false)
-		nextHighestIndex := findIndexOfHighest(bank, indexOfHighest+1, true)
-		battery_seq := []rune{bank[indexOfHighest], bank[nextHighestIndex]}
-		converted, err := strconv.Atoi(string(battery_seq))
-		if err != nil {
-			panic(err)
+		charge_indexes := []int{}
+
+		// changing this to be 2 or 12 depending on part 1 or part 2
+		digits := 12 // or 2
+		curr := 0
+		for i := 0; i < digits; i++ {
+			index := findIndexOfHighest(bank, curr, len(bank)-digits+i)
+			charge_indexes = append(charge_indexes, index)
+			curr = index + 1
 		}
-		highest = converted
-		charges = append(charges, highest)
+
+		var voltage_str string
+		for _, ci := range charge_indexes {
+			voltage_str += string(bank[ci])
+		}
+		voltage, _ := strconv.Atoi(voltage_str)
+		voltages = append(voltages, voltage)
 	}
 
-	for _, charge := range charges {
-		println(charge)
+	for _, charge := range voltages {
 		voltage += charge
 	}
-	println("Total Voltage:", voltage)
+	fmt.Println("Total Voltage:", voltage)
 }
