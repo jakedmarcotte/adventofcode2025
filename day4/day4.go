@@ -4,17 +4,15 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"reflect"
 )
 
-func visitor(row int, col int, rows [][]rune, visited *map[string]bool, accessible *[]string) {
+func visitor(row int, col int, rows [][]rune, visited *map[string]bool, accessible *[][2]int) {
 	key := fmt.Sprintf("%d,%d", row, col)
 	if _, exists := (*visited)[key]; exists {
 		return
 	}
 	(*visited)[key] = true
-
-	// process current position
-	fmt.Printf("Visiting row %d, col %d: %c\n", row, col, rows[row][col])
 
 	// visit neighbors (up, down, left, right)
 	directions := [][2]int{
@@ -44,7 +42,7 @@ func visitor(row int, col int, rows [][]rune, visited *map[string]bool, accessib
 		}
 
 		if adjacents < 4 {
-			*accessible = append(*accessible, key)
+			*accessible = append(*accessible, [2]int{row, col})
 		}
 	}
 
@@ -77,10 +75,39 @@ func main() {
 		rows = append(rows, row)
 	}
 
-	visited := make(map[string]bool)
-	var accessible []string
-	visitor(0, 0, rows, &visited, &accessible)
+	// remove the accessible positions from the grid
+	no_removals := false
+	total_accessible := 0
+	for !no_removals {
+		// inital rows state
+		fmt.Println("Current grid state:")
+		init_rows := make([][]rune, len(rows))
+		for r, row := range rows {
+			init_rows[r] = make([]rune, len(row))
+			copy(init_rows[r], row)
+			fmt.Println(string(init_rows[r]))
+		}
 
-	fmt.Println(accessible)
-	fmt.Println("Total accessible positions:", len(accessible))
+		visited := make(map[string]bool)
+		var accessible [][2]int
+		visitor(0, 0, rows, &visited, &accessible)
+		removing := len(accessible)
+		total_accessible += removing
+		fmt.Println("Removing", removing)
+
+		// clearing accessible positions
+		for _, pos := range accessible {
+			rows[pos[0]][pos[1]] = '.'
+		}
+
+		fmt.Println("Next grid state:")
+		for _, row := range rows {
+			fmt.Println(string(row))
+		}
+
+		if reflect.DeepEqual(rows, init_rows) {
+			no_removals = true
+		}
+	}
+	fmt.Println("Total accessible positions after removals:", total_accessible)
 }
